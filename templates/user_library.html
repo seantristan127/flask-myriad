@@ -1,16 +1,15 @@
 {% extends "user_layout.html" %}
 {% block content %}
 
-      <!-- Sidebar -->
-      <ul class="sidebar navbar-nav">
+<ul class="sidebar navbar-nav">
 
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" href="{{url_for('browse_books')}}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Browse Books</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item active">
           <a class="nav-link" href="{{url_for('user_library')}}">
             <i class="fas fa-fw fa-chart-area"></i>
             <span>My Books</span></a>
@@ -21,5 +20,5 @@
             <span>Logout</span></a>
         </li>
       </ul>
-{% endblock content%}
 
+{% endblock content%}

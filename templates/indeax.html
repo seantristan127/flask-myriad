@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="description" content="">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <!-- The above 4 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+      <!-- Title -->
+      <title>Myriad</title>
+
+      <!-- Favicon -->
+      <link rel="icon" href="{{ url_for('static', filename='images/index-img/logo.png')}}">
+
+      <!-- Core Stylesheet -->
+      <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
+
+      <!-- Responsive CSS -->
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css')}}">
+  </head>
+
+  <body>
+      <!-- ***** Header Area Start ***** -->
+      <header class="header_area clearfix">
+          <div class="container-fluid h-100">
+              <div class="row h-100">
+                  <!-- Menu Area Start -->
+                  <div class="col-12 h-100">
+                      <div class="menu_area h-100">
+                          <nav class="navbar h-100 navbar-expand-lg align-items-center">
+                              <!-- Logo -->
+                              <a class="navbar-brand" href="index.html"><img src="static/images/index-img/logo.png" alt="logo"></a>
+                              <!-- Menu Area -->
+                              <div class="collapse navbar-collapse justify-content-end" id="mosh-navbar">
+                                  <!-- Signin/Signup btn -->
+                                  <div class="login-register-btn">
+                                      <a href="{{url_for('signin')}}">Sign In</a>
+                                      <a href="{{url_for('signup')}}">/ Sign Up</a>
+                                  </div>
+                              </div>
+                          </nav>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </header>
+      <!-- ***** Header Area End ***** -->
+
+      <!-- ***** Welcome Area Start ***** -->
+      <section class="welcome_area clearfix" id="home" style="background-image: url(static/images/index-img/welcome-bg.png)">
+          <div class="hero-slides owl-carousel">
+              <!-- Single Hero Slides -->
+              <div class="single-hero-slide d-flex align-items-end justify-content-center">
+                  <div class="hero-slide-content text-center">
+                      <h2>Sample text here</h2>
+                      <h4>Sample desription here!</h4>
+                  </div>
+              </div>
+              <!-- Single Hero Slides -->
+              <div class="single-hero-slide d-flex align-items-end justify-content-center">
+                  <div class="hero-slide-content text-center">
+                      <h2>Sample text here</h2>
+                      <h4>Sample description here!</h4>
+                  </div>
+              </div>
+          </div>
+      </section>
+      <!-- ***** Welcome Area End ***** -->
+
+      <!-- ***** Footer Area Start ***** -->
+      <footer class="footer-area clearfix">
+          <!-- Fotter Bottom Area -->
+          <div class="footer-bottom-area">
+              <div class="container h-100">
+                  <div class="row h-100">
+                      <div class="col-12 h-100">
+                          <div class="footer-bottom-content h-100 d-md-flex justify-content-between align-items-center">
+                              <div class="copyright-text">
+                                  <p>Copyright &copy;</p>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </footer>
+      <!-- ***** Footer Area End ***** -->
+
+      <!-- jQuery-2.2.4 js -->
+      <script src="{{url_for('static', filename='js/jquery-2.2.4.min.js')}}"></script>
+      <!-- Popper js -->
+      <script src="{{url_for('static', filename='js/popper.min.js')}}"></script>
+      <!-- Bootstrap js -->
+      <script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+      <!-- All Plugins js -->
+      <script src="{{url_for('static', filename='js/plugins.js')}}"></script>
+      <!-- Active js -->
+      <script src="{{url_for('static', filename='js/active.js')}}"></script>
+  </body>
+
+</html>

@@ -255,6 +255,20 @@ img {
     }
 }
 
+#scrollUp {
+    bottom: 0;
+    font-size: 24px;
+    right: 30px;
+    width: 40px;
+    background: #4a7aec;
+    color: #fff;
+    text-align: center;
+    height: 40px;
+    line-height: 38px;
+    border-radius: 0;
+    box-shadow: 2px 10px 8px rgba(0, 0, 0, 0.15);
+}
+
 .mosh-table {
     display: table;
     height: 100%;
@@ -445,7 +459,7 @@ img {
 /* Sticky CSS */
 
 .header_area.sticky {
-    background-color: #002233;
+    background-color: #25499f;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     height: 80px;
     position: fixed;
