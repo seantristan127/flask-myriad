@@ -377,7 +377,7 @@ def all_user():
 
     cursor.execute("SELECT * FROM user")
     user = cursor.fetchall()
-    return render_template('all_user.html')
+    return render_template('all_user.html', users = user)
 
 
 @app.route("/upload_book", methods=['GET', 'POST'])
