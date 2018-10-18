@@ -2,16 +2,15 @@ import os
 import sqlite3
 import urllib
 from urllib.request import urlopen
-
-from flask import Flask, render_template, request, flash, jsonify
+from flask import Flask, render_template, request, flash, jsonify, url_for
 import json
 
-from flask_json import json_response
-from flask_wtf import FlaskForm
-from wtforms import Form, StringField, validators, PasswordField, SubmitField
-from wtforms.validators import DataRequired
+from flask_uploads import UploadSet, IMAGES
 
 from flask_bcrypt import Bcrypt
+from werkzeug.utils import redirect
+
+photos = UploadSet('photos', IMAGES)
 
 app = Flask(__name__)
 
@@ -28,15 +27,14 @@ if not os.path.exists(DATABASE):
     cursor = db_conn.cursor()
 
     try:
-        cursor.execute('''CREATE TABLE users(
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        user_name VARCHAR(20) NOT NULL,
-                        first_name VARCHAR(25) NOT NULL,
-                        last_name VARCHAR(25) NOT NULL,
-                        email_address VARCHAR(30) NOT NULL,
-                        password VARCHAR(20) NOT NULL,
-                        account_status BOOLEAN,
-                        is_admin BOOLEAN
+        cursor.execute('''CREATE TABLE user(
+                        user_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        user_fname VARCHAR(45) NOT NULL,
+                        user_lname VARCHAR(45) NOT NULL,
+                        user_email VARCHAR(45) NOT NULL,
+                        user_password VARCHAR(45) NOT NULL,
+                        user_isActive BOOLEAN NOT NULL,
+                        user_isAdmin BOOLEAN NOT NULL
                         );''')
 
         db_conn.commit()
@@ -45,16 +43,9 @@ if not os.path.exists(DATABASE):
         print(e)
 
     try:
-        cursor.execute('''CREATE TABLE books(
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        name VARCHAR(30) NOT NULL,
-                        description TEXT,
-                        genre VARCHAR,
-                        author VARCHAR(40),
-                        ratings FLOAT,
-                        picture BLOB,
-                        date_time DATETIME,
-                        status BOOLEAN NOT NULL
+        cursor.execute('''CREATE TABLE genre(
+                        genre_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        genre_name VARCHAR(45) NOT NULL
                         );''')
 
         db_conn.commit()
@@ -62,14 +53,67 @@ if not os.path.exists(DATABASE):
     except sqlite3.OperationalError as e:
         print(e)
 
+    try:
+        cursor.execute('''CREATE TABLE type(
+                        type_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        type_name VARCHAR(45) NOT NULL
+                        );''')
+
+        db_conn.commit()
+
+    except sqlite3.OperationalError as e:
+        print(e)
 
     try:
-        cursor.execute('''CREATE TABLE library(
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        user_id INTEGER NOT NULL,
+        cursor.execute('''CREATE TABLE comment(
+                        comment_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        comment_text TEXT NOT NULL,
+                        user_id VARCHAR(45) NOT NULL,
+                        FOREIGN KEY(user_id) REFERENCES user(user_id)
+                        );''')
+
+        db_conn.commit()
+
+    except sqlite3.OperationalError as e:
+        print(e)
+
+    try:
+        cursor.execute('''CREATE TABLE rating(
+                        rating_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        rating_score FLOAT,
+                        user_id VARCHAR(45) NOT NULL,
+                        FOREIGN KEY(user_id) REFERENCES user(user_id)
+                        );''')
+
+        db_conn.commit()
+
+    except sqlite3.OperationalError as e:
+        print(e)
+
+    try:
+        cursor.execute('''CREATE TABLE book(
+                        book_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        book_name VARCHAR(45) NOT NULL,
+                        book_description VARCHAR(45) NOT NULL,
+                        book_author VARCHAR(45) NOT NULL,
+                        book_picture VARCHAR(45),
+                        book_isbn VARCHAR(45) NOT NULL,
+                        book_average_rating FLOAT,
+                        type_id VARCHAR(45) NOT NULL,
+                        FOREIGN KEY(type_id) REFERENCES type(type_id)
+                        );''')
+
+        db_conn.commit()
+
+    except sqlite3.OperationalError as e:
+        print(e)
+
+    try:
+        cursor.execute('''CREATE TABLE book_comment(
+                        comment_id INTEGER NOT NULL,
                         book_id INTEGER NOT NULL,
-                        FOREIGN KEY(user_id) REFERENCES users(id),
-                        FOREIGN KEY(book_id) REFERENCES books(id)
+                        FOREIGN KEY(comment_id) REFERENCES comment(comment_id),
+                        FOREIGN KEY(book_id) REFERENCES book(book_id)
                         );''')
 
         db_conn.commit()
@@ -78,29 +122,11 @@ if not os.path.exists(DATABASE):
         print(e)
 
     try:
-        cursor.execute('''CREATE TABLE book_comments(
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        cursor.execute('''CREATE TABLE book_rating(
+                        rating_id INTEGER NOT NULL,
                         book_id INTEGER NOT NULL,
-                        comments TEXT,
-                        date_time DATETIME,
-                        status BOOLEAN NOT NULL,
-                        FOREIGN KEY(book_id) REFERENCES books(id)
-                        );''')
-
-        db_conn.commit()
-
-    except sqlite3.OperationalError as e:
-        print(e)
-
-    try:
-        cursor.execute('''CREATE TABLE book_ratings(
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        user_id INTEGER NOT NULL,
-                        book_id INTEGER NOT NULL,
-                        rate FLOAT,
-                        status BOOLEAN NOT NULL,
-                        FOREIGN KEY(user_id) REFERENCES users(id),
-                        FOREIGN KEY(book_id) REFERENCES book(id)
+                        FOREIGN KEY(rating_id) REFERENCES rating(rating_id),
+                        FOREIGN KEY(book_id) REFERENCES book(book_id)
                         );''')
 
         db_conn.commit()
@@ -110,11 +136,23 @@ if not os.path.exists(DATABASE):
 
     try:
         cursor.execute('''CREATE TABLE book_genre(
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        genre_id INTEGER NOT NULL,
                         book_id INTEGER NOT NULL,
-                        genre varchar(3),
-                        type varchar(30),
-                        FOREIGN KEY(book_id) REFERENCES book(id)
+                        FOREIGN KEY(genre_id) REFERENCES genre(genre_id),
+                        FOREIGN KEY(book_id) REFERENCES book(book_id)
+                        );''')
+
+        db_conn.commit()
+
+    except sqlite3.OperationalError as e:
+        print(e)
+
+    try:
+        cursor.execute('''CREATE TABLE user_library(
+                        user_id INTEGER NOT NULL,
+                        book_id INTEGER NOT NULL,
+                        FOREIGN KEY(user_id) REFERENCES user(user_id),
+                        FOREIGN KEY(book_id) REFERENCES book(book_id)
                         );''')
 
         db_conn.commit()
@@ -123,12 +161,13 @@ if not os.path.exists(DATABASE):
         print(e)
 
     db_conn.close()
+
 else:
     print("DATABASE ALREADY EXIST")
 
 
 @app.route("/")
-@app.route("/index ")
+@app.route("/index")
 def index():
     return render_template('index.html')
 
@@ -136,6 +175,11 @@ def index():
 @app.route("/signup")
 def signup():
     return render_template('signup.html', title = 'Sign Up')
+
+
+@app.route("/admin_signin")
+def admin_signin():
+    return render_template('admin_signin.html', title = 'Sign In as Administrator')
 
 
 @app.route("/signin")
@@ -154,19 +198,68 @@ def login_user():
 
         cursor = db_conn.cursor()
 
-        cursor.execute("SELECT email_address FROM users WHERE email_address = ?", (email_address,))
+        cursor.execute("SELECT user_email FROM user WHERE user_email = ?", (email_address,))
         email_check = cursor.fetchone()
 
-        cursor.execute("SELECT password FROM users WHERE email_address = ?", (email_address,))
+        cursor.execute("SELECT user_password FROM user WHERE user_email = ?", (email_address,))
         hashed_pw = cursor.fetchone()
 
         try:
             if bcrypt.check_password_hash(hashed_pw[0], password) and email_address == email_check[0]:
 
-                cursor.execute("SELECT is_admin FROM users WHERE email_address = ?", (email_address,))
+                cursor.execute("SELECT user_isAdmin FROM user WHERE user_email = ?", (email_address,))
                 is_admin = cursor.fetchone()
 
-                cursor.execute("SELECT user_name FROM users WHERE email_address = ?", (email_address,))
+                cursor.execute("SELECT user_lname FROM user WHERE user_email = ?", (email_address,))
+                user_name = cursor.fetchone()
+
+                response = urllib.request.urlopen('http://127.0.0.1:5000/users_api').read()
+
+                jsonResponse = json.loads(response)
+
+
+                db_conn.commit()
+                db_conn.close()
+
+                if is_admin[0]:
+                    print("Im admin")
+                    return redirect(url_for('admin'))
+                else:
+                    print("Im user")
+                    return redirect(url_for('user_home', name = user_name[0]))
+            else:
+                flash("Invalid input")
+        except TypeError as e:
+            pass
+
+    return render_template('index.html')
+
+
+@app.route("/admin_form", methods=['GET', 'POST'])
+def admin_form():
+
+    if request.method == 'POST':
+
+        email_address = request.form['email']
+        password = request.form['password']
+
+        db_conn = sqlite3.connect('myriad.db')
+
+        cursor = db_conn.cursor()
+
+        cursor.execute("SELECT user_email FROM user WHERE user_email = ?", (email_address,))
+        email_check = cursor.fetchone()
+
+        cursor.execute("SELECT user_password FROM user WHERE user_email = ?", (email_address,))
+        hashed_pw = cursor.fetchone()
+
+        try:
+            if bcrypt.check_password_hash(hashed_pw[0], password) and email_address == email_check[0]:
+
+                cursor.execute("SELECT user_isAdmin FROM user WHERE user_email = ?", (email_address,))
+                is_admin = cursor.fetchone()
+
+                cursor.execute("SELECT user_lname FROM user WHERE user_email = ?", (email_address,))
                 user_name = cursor.fetchone()
 
                 db_conn.commit()
@@ -174,11 +267,9 @@ def login_user():
 
                 print(is_admin[0])
                 if is_admin[0]:
-                    print("Im admin")
                     return render_template('dashboard.html')
                 else:
-                    print("Im user")
-                    return render_template('user_home.html', name = user_name[0])
+                    return "<script>alert('Permission Denied')</script>"
             else:
                 flash("Invalid input")
         except TypeError as e:
@@ -189,10 +280,13 @@ def login_user():
 
 @app.route("/add_user", methods=['GET', 'POST'])
 def add_user():
+    return render_template('add_user.html')
 
+
+@app.route("/process_user", methods=['GET', 'POST'])
+def process_user():
+    print("in")
     if request.method == 'POST':
-
-        user_name = request.form['username']
         email = request.form['email']
         first_name = request.form['firstname']
         last_name = request.form['lastname']
@@ -203,7 +297,7 @@ def add_user():
 
         cursor = db_conn.cursor()
 
-        cursor.execute("INSERT INTO users(user_name, first_name, last_name, email_address, password, account_status, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)", (user_name, first_name, last_name, email, hashed_pw, True, False))
+        cursor.execute("INSERT INTO user(user_fname, user_lname, user_email, user_password, user_isActive, user_isAdmin) VALUES (?, ?, ?, ?, ?, ?)", (first_name, last_name, email, hashed_pw, True, True))
 
         db_conn.commit()
 
@@ -218,7 +312,6 @@ def admin_add_user():
     if request.method == 'POST':
 
         print("hello")
-        user_name = request.form['username']
         email = request.form['email']
         first_name = request.form['firstname']
         last_name = request.form['lastname']
@@ -229,7 +322,9 @@ def admin_add_user():
 
         cursor = db_conn.cursor()
 
-        cursor.execute("INSERT INTO users(user_name, first_name, last_name, email_address, password, account_status, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)", (user_name, first_name, last_name, email, hashed_pw, True, False))
+        cursor.execute(
+            "INSERT INTO user(user_fname, user_lname, user_email, user_password, user_isActive, user_isAdmin) VALUES (?, ?, ?, ?, ?, ?)",
+            (first_name, last_name, email, hashed_pw, True, False))
 
         db_conn.commit()
 
@@ -245,33 +340,64 @@ def admin_add_user():
     return "<script>alert('Book Successfully Added!')</script>"
 
 
-@app.route("/dashboard")
-def dashboard():
-    return render_template('dashboard.html')
+@app.route("/admin")
+def admin():
+    return render_template('admin.html')
 
 
-@app.route("/admin_all_user")
-def admin_all_user():
-    return render_template('admin_all_user.html')
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
 
 
-@app.route("/upload_book", methods=['POST'])
+@app.route("/all_books")
+def all_books():
+
+    db_conn = sqlite3.connect('myriad.db')
+
+    cursor = db_conn.cursor()
+
+    cursor.execute("SELECT * FROM book")
+    books = cursor.fetchall()
+
+    cursor.execute("SELECT COUNT(distinct book_comment.book_id) FROM book_comment INNER JOIN book ON book_comment.book_id = book.book_id")
+    comment = cursor.fetchall()
+
+    return render_template('all_books.html', books = books, comment = comment)
+
+
+@app.route("/all_user")
+def all_user():
+
+    db_conn = sqlite3.connect('myriad.db')
+
+    cursor = db_conn.cursor()
+
+    cursor.execute("SELECT * FROM user")
+    user = cursor.fetchall()
+    return render_template('all_user.html')
+
+
+@app.route("/upload_book", methods=['GET', 'POST'])
 def upload_book():
     print("hello")
     if request.method == 'POST':
-        print("hello")
         name = request.form['name']
+        print(name)
         description = request.form['description']
-        genre = request.form['genre']
-        image_link = request.form['image_link']
         author = request.form['author']
+        image = "x"
+        isbn = request.form['isbn']
+        type = '1'
         db_conn = sqlite3.connect('myriad.db')
 
         cursor = db_conn.cursor()
 
         cursor.execute(
-            "INSERT INTO books(name, description, genre, picture, author, ratings, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (name, description, genre, image_link, author, 0, True))
+            "INSERT INTO book(book_name, book_description, book_author, book_isbn, book_average_rating, book_picture) VALUES (?, ?, ?, ?, ?, ?)",
+            (name, description, author, isbn, 0, image))
 
         db_conn.commit()
         db_conn.close()
@@ -279,9 +405,9 @@ def upload_book():
     return "<script>alert('Book Successfully Added!')</script>"
 
 
-@app.route("/admin_books")
-def admin_books():
-    return render_template('admin_books.html')
+@app.route("/add_books")
+def add_books():
+    return render_template('add_books.html')
 
 
 @app.route("/logout")
@@ -306,6 +432,20 @@ def dict_factory(cursor, row):
     return d
 
 
+@app.route("/users_api")
+def admin_api():
+
+    db_conn = sqlite3.connect('myriad.db')
+    db_conn.row_factory = dict_factory
+
+    cursor = db_conn.cursor()
+    cursor.execute("SELECT * FROM user")
+    results = cursor.fetchall()
+    db_conn.close()
+
+    return jsonify(results)
+
+
 @app.route("/books_api")
 def books_api():
 
@@ -313,7 +453,7 @@ def books_api():
     db_conn.row_factory = dict_factory
 
     cursor = db_conn.cursor()
-    cursor.execute("SELECT * FROM books")
+    cursor.execute("SELECT * FROM book")
     results = cursor.fetchall()
     db_conn.close()
 
@@ -329,7 +469,7 @@ def browse_books():
 
     sample_view = ""
     for rows in jsonResponse:
-        sample_view += rows['picture']
+        sample_view += rows['picture'] + '\n'
 
     #print(jsonResponse[0]['author'])
     return render_template('browse_books.html', jsonResponse = sample_view)

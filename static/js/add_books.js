@@ -3,22 +3,23 @@ $(document).ready(function() {
 	$('#submitBook').on('click', function() {
 		$.ajax({
 			data : {
-			  name : $('#name').val(),
+			  name : $('#book_name').val(),
               description : $('#description').val(),
-              genre : $('#genre').val(),
-              image_link : $('#image_link').val(),
-              author : $('#author').val()
+              genre : $('#author').val(),
+              isbn : $('#isbn').val(),
+              author : $('#type').val()
 			},
 			type : 'POST',
 			url : '/upload_book'
 		})
 		.done(function(data) {
 
-			$('#name').val('');
+            alert("Book successfully added!")
+			$('#book_name').val('');
 			$('#description').val('');
-			$('#genre').val('');
-			$('#image_link').val('');
 			$('#author').val('');
+			$('#isbn').val('');
+			$('#type').val('');
 
 
 		});
