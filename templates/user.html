@@ -13,12 +13,13 @@
   <link rel="stylesheet" href="'https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/product-lists/product-list-vertical.css')}}">
   <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <header class="main-header">
-    <a href="{{ url_for('admin')}}" class="logo">
-      <span class="logo-lg">Admin</span>
+    <a href="{{ url_for('user')}}" class="logo">
+      <span class="logo-lg">User</span>
     </a>
     <nav class="navbar navbar-static-top">
       <div class="navbar-custom-menu">
@@ -49,28 +50,9 @@
       <ul class="sidebar-menu" data-widget="tree">
         <li class="header"></li>
         <li class="treeview">
-          <a href="#">
-            <i class="fa fa-edit"></i> <span>User</span>
-            <span class="pull-right-container">
-              <i class="fa fa-angle-left pull-right"></i>
-            </span>
-          </a>
-          <ul class="treeview-menu">
-            <li><a href="{{ url_for('all_user')}}"><i class="fa fa-circle-o"></i> View All Users</a></li>
-            <li><a href="{{ url_for('add_user')}}"><i class="fa fa-circle-o"></i> Add User</a></li>
-          </ul>
-        </li>
+            <i class="fa fa-edit"></i> <span><a href="{{ url_for('library') }}">My Library</a></span>
         <li class="treeview">
-          <a href="#">
-            <i class="fa fa-edit"></i> <span>Books</span>
-            <span class="pull-right-container">
-              <i class="fa fa-angle-left pull-right"></i>
-            </span>
-          </a>
-          <ul class="treeview-menu">
-            <li><a href="{{ url_for('all_books') }}"><i class="fa fa-circle-o"></i> View All Books</a></li>
-            <li><a href="{{ url_for('add_books') }}"><i class="fa fa-circle-o"></i> Add Books</a></li>
-          </ul>
+            <i class="fa fa-edit"></i> <span><a href="{{ url_for('browse') }}">Browse Books</a></span>
         </li>
       </ul>
     </section>
@@ -116,5 +98,6 @@
 <script src="{{ url_for('static', filename='dist/js/demo.js')}}"></script>
 <script src="{{ url_for('static', filename='js/add_books.js')}}"></script>
 <script src="{{ url_for('static', filename='js/add_user.js')}}"></script>
+<script src="{{ url_for('static', filename='js/save_books.js')}}"></script>
 </body>
 </html>

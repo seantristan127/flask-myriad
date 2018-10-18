@@ -5,6 +5,7 @@ from urllib.request import urlopen
 from flask import Flask, render_template, request, flash, jsonify, url_for
 import json
 
+
 from flask_uploads import UploadSet, IMAGES
 
 from flask_bcrypt import Bcrypt
@@ -226,7 +227,7 @@ def login_user():
                     return redirect(url_for('admin'))
                 else:
                     print("Im user")
-                    return redirect(url_for('user_home', name = user_name[0]))
+                    return redirect(url_for('user', name = user_name[0]))
             else:
                 flash("Invalid input")
         except TypeError as e:
@@ -297,8 +298,13 @@ def process_user():
 
         cursor = db_conn.cursor()
 
-        cursor.execute("INSERT INTO user(user_fname, user_lname, user_email, user_password, user_isActive, user_isAdmin) VALUES (?, ?, ?, ?, ?, ?)", (first_name, last_name, email, hashed_pw, True, True))
+        cursor.execute("SELECT COUNT(user_email), * FROM user WHERE user_email = ?", (email,))
+        count = cursor.fetchone()
 
+        if len(count) <= 0:
+            cursor.execute("INSERT INTO user(user_fname, user_lname, user_email, user_password, user_isActive, user_isAdmin) VALUES (?, ?, ?, ?, ?, ?)", (first_name, last_name, email, hashed_pw, True, False))
+        else:
+            return "Error"
         db_conn.commit()
 
         db_conn.close()
@@ -384,7 +390,7 @@ def all_user():
 def upload_book():
     print("hello")
     if request.method == 'POST':
-        name = request.form['name']
+        name = request.form['book_name']
         print(name)
         description = request.form['description']
         author = request.form['author']
@@ -415,18 +421,36 @@ def logout():
     return render_template('logout.html')
 
 
-@app.route("/user_home")
-def user_home():
-    return render_template('user_home.html')
+@app.route("/user")
+def user():
+    return render_template('user.html')
 
 
-@app.route("/user_library")
-def user_library():
-    return render_template('user_library.html')
+@app.route("/library")
+def library():
+    return render_template('/library.html')
 
+
+@app.route("/save_book", methods=['GET', 'POST'])
+def save_book():
+    print("hello")
+    if request.method == 'POST':
+
+        book_id = request.form['id']
+        db_conn = sqlite3.connect('myriad.db')
+
+        cursor = db_conn.cursor()
+
+        cursor.execute("INSERT INTO user_library(user_id, book_id) VALUES (?, ?)", (1, book_id))
+
+        db_conn.commit()
+        db_conn.close()
+
+    return "<script>alert('Book Successfully Added!')</script>"
 
 def dict_factory(cursor, row):
     d = {}
+    
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
@@ -460,23 +484,19 @@ def books_api():
     return jsonify(results)
 
 
-@app.route("/browse_books")
-def browse_books():
+@app.route("/browse")
+def browse():
+    db_conn = sqlite3.connect('myriad.db')
 
-    response = urllib.request.urlopen('http://127.0.0.1:5000/books_api').read()
+    cursor = db_conn.cursor()
 
-    jsonResponse = json.loads(response)
+    cursor.execute("SELECT * FROM book")
+    books = cursor.fetchall()
 
-    sample_view = ""
-    for rows in jsonResponse:
-        sample_view += rows['picture'] + '\n'
+    cursor.execute("SELECT COUNT(distinct book_comment.book_id) FROM book_comment INNER JOIN book ON book_comment.book_id = book.book_id")
+    comment = cursor.fetchall()
 
-    #print(jsonResponse[0]['author'])
-    return render_template('browse_books.html', jsonResponse = sample_view)
-
-'''
-def browse_books():
-    return render_template('browse_books.html')'''
+    return render_template('browse.html', books=books, comment=comment)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,33 @@
+{% extends "user.html" %}
+{% block content %}
+  <div class="content-wrapper">
+    <section class="content">
+      <div class="row" id = "list">
+        <ul class="product-list-vertical">
+            {% for x in books %}
+                <li>
+                    <a href="#" class="product-photo">
+                        <img src="{{ x[4] }}" height="160" alt="iPhone 6" />
+                    </a>
+                    <div class="product-details">
+                        <a href="#" class="product-compare">{{ x[3] }}</a>
+                        <h2><a href="#">{{ x[1] }}</a></h2>
+                        <div class="product-rating">
+                            <div>
+                                <span class="product-stars" style="width: 60px" >
+                                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                                </span>
+                            </div>
+                            <span><a href="#">82 reviews</a></span>
+                        </div>
+                        <p class="product-description">{{ x[2] }}</p>
+                        <button type="submit" id="book_id" value="{{ x[0] }}">Save</button>
+                    </div>
+
+                </li>
+            {% endfor %}
+        </ul>
+      </div>
+    </section>
+  </div>
+  {% endblock content%}
